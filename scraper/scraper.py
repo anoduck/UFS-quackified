@@ -64,8 +64,15 @@ rhtime = 1800
 tsmin = 30
 tsmax = 60
 
-
 # CHROMEDRIVER_BINARIES_FOLDER = "bin"
+
+
+# --------------------------------------------------------------
+# This is a filter that is in development, you can ignore this
+# for now.
+# -------------------------------------------------------------
+
+genderfilter = False
 
 
 # -------------------------------------------------------------
@@ -162,16 +169,34 @@ def check_height():
 # -------------------------------------------------------------
 
 
-# def block_check(b):
-#     blocked = ""
-#     try:
-#         blocked = b.find_element_by_xpath("//div[@class='mvl ptm uiInterstitial uiInterstitialLarge uiBoxWhite']").text
-#     except Exception:
-#         pass
-#     finally:
-#         exit(1)
+def block_check(b):
+    blocked = ""
+    try:
+        blocked = b.find_element_by_xpath("//div[@class='mvl ptm uiInterstitial uiInterstitialLarge uiBoxWhite']").text
+    except Exception:
+        pass
+    finally:
+        exit(1)
+
 
 # -------------------------------------------------------------
+# Gender Function
+# -------------------------------------------------------------
+
+def get_gender(g):
+    gender = ""
+    try:
+        gender = g.find_element_by_xpath(".//dev[@class=_2iem]").text
+    except Exception:
+        try:
+            gender = g.find_element_by_xpath(".//div[@class='ProfileSectionContactBasic']").text
+        except Exception:
+            pass
+    return gender
+
+
+# -------------------------------------------------------------
+# Helper function used to scroll the page being scraped
 # -------------------------------------------------------------
 
 # helper function: used to scroll the page
@@ -661,12 +686,19 @@ def create_original_link(url):
 
 
 # -----------------------------------------------------------------------------
+# This is the actual scraping function that is performed
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# I.E. Gender filter and Block notification need to be located here in order to
+# be included in the scraping process.
 # -----------------------------------------------------------------------------
+
+# Creation of folder
 def create_folder(folder):
     if not os.path.exists(folder):
         os.mkdir(folder)
 
 
+# Define Function scrap_profile
 @limits(calls=randint(rtqlow, rtqhigh), period=randint(rltime, rhtime))
 def scrap_profile(ids):
     folder = os.path.join(os.getcwd(), "data")
@@ -686,11 +718,33 @@ def scrap_profile(ids):
 
         try:
             target_dir = os.path.join(folder, user_id.split("/")[-1])
-            create_folder(target_dir)
+            create_folder(target_dir)  # created above
             os.chdir(target_dir)
         except Exception:
             print("Some error occurred in creating the profile directory.")
             continue
+
+        # ----------------------------------------------------------------------------
+        # Test the gender of the profile being scraped first before scraping
+        # ----------------------------------------------------------------------------
+        print("---------------------------------------")
+        print("Testing Gender")
+
+        # Now test gender
+        scan_list = [
+            "About"
+        ]
+
+        section = [
+            "Gender"
+        ]
+
+        elements_path = [
+            "/some_element"
+        ]
+
+        # Now I realize that another function needs to be created to run the gender test and
+        # read from the list
 
         # ----------------------------------------------------------------------------
         # This section outlines the process in which the scraping will occur.
