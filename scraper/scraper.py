@@ -175,16 +175,19 @@ def block_check(b):
         blocked = b.find_element_by_xpath("//div[@class='mvl ptm uiInterstitial uiInterstitialLarge uiBoxWhite']").text
     except Exception:
         pass
-    finally:
-        exit(1)
+
+    if blocked is None:
+        pass
+    else:
+        print("Profile is blocked").exit(1)
 
 
 # -------------------------------------------------------------
-# Gender Function
+# ---> Gender Function <---
 # -------------------------------------------------------------
 
-def get_gender(g):
-    gender = ""
+def get_gender(g, gender=("male", "female", "unknown")):
+    # gender = ""
     try:
         gender = g.find_element_by_xpath(".//dev[@class=_2iem]").text
     except Exception:
@@ -435,6 +438,14 @@ def save_to_file(name, elements, status, current_section):
         results = []
         img_names = []
 
+        # ---------------------------------------------------
+        # Below concerns scraping the information of a friend
+        # The script gets the name of a friend by visiting the
+        # link to their profile and then scraping the information
+        # there.
+        # It does not visit the profile and then
+        # ---------------------------------------------------
+
         # dealing with Friends
         if status == 0:
             # get profile links of friends
@@ -444,6 +455,13 @@ def save_to_file(name, elements, status, current_section):
             # get names of friends
             people_names = [
                 x.find_element_by_tag_name("img").get_attribute("aria-label")
+                for x in elements
+            ]
+
+            # ---> Get gender of friends <--- #
+            # you can find element by tag, class, xpath, css
+            people_gender = [
+                x.find_element_by_tag_name("tag").get_attribute("gender")
                 for x in elements
             ]
 
@@ -580,6 +598,10 @@ def save_to_file(name, elements, status, current_section):
 
                 # friend's name
                 f.writelines(people_names[i])
+                f.write(",")
+
+                # friend's gender  <--- Gender
+                f.writelines(people_gender[i])
                 f.write(",")
 
                 # friend's downloaded picture id
@@ -725,28 +747,6 @@ def scrap_profile(ids):
             continue
 
         # ----------------------------------------------------------------------------
-        # Test the gender of the profile being scraped first before scraping
-        # ----------------------------------------------------------------------------
-        print("---------------------------------------")
-        print("Testing Gender")
-
-        # Now test gender
-        scan_list = [
-            "About"
-        ]
-
-        section = [
-            "Gender"
-        ]
-
-        elements_path = [
-            "/some_element"
-        ]
-
-        # Now I realize that another function needs to be created to run the gender test and
-        # read from the list
-
-        # ----------------------------------------------------------------------------
         # This section outlines the process in which the scraping will occur.
         # In the following order: 1) Friends, 2) Photos, 3) Videos, 4) About
         # ----------------------------------------------------------------------------
@@ -838,6 +838,7 @@ def scrap_profile(ids):
             "/about?section=education",
             "/about?section=living",
             "/about?section=contact-info",
+            "/about?section=gender",
             "/about?section=relationship",
             "/about?section=bio",
             "/about?section=year-overviews",
@@ -850,6 +851,7 @@ def scrap_profile(ids):
             "Work and Education.txt",
             "Places Lived.txt",
             "Contact and Basic Info.txt",
+            "Gender.txt",
             "Family and Relationships.txt",
             "Details About.txt",
             "Life Events.txt",
